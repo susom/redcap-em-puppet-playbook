@@ -1,0 +1,63 @@
+{
+  "name": "Puppet Playbook",
+
+  "namespace":"Stanford\\Playbook",
+
+  "description": "Automated Puppet Playbook task initiation",
+
+  "no-auth-pages": [
+    "pages/Refresh"
+  ],
+
+  "authors": [
+    {
+      "name": "Andy Martin",
+      "email": "andy123@stanford.edu",
+      "institution": "Stanford University"
+    },
+    {
+      "name": "Lee Ann Yasukawa",
+      "email": "yasukawa@stanford.edu",
+      "institution": "Stanford University"
+    }
+  ],
+
+  "permissions": [
+  ],
+
+  "links": {
+    "control-center": [
+      {
+        "name": "Playbook to update REDCap DEV",
+        "icon": "gear",
+        "url": "pages/Refresh.php"
+      }
+    ],
+    "project": [
+    ]
+  },
+
+  "system-settings": [
+    {
+      "key": "log_path",
+      "name": "<b>Full server path to log file</b>",
+      "required": false,
+      "type": "text"
+    },
+    {
+      "key": "puppet_url",
+      "name": "<b>URL to Playbook</b>",
+      "required": true,
+      "type": "text"
+    },
+    {
+      "key": "puppet_token",
+      "name": "<b>token to Playbook</b>",
+      "required": true,
+      "type": "text"
+    }
+  ],
+
+  "project-settings": [
+  ]
+}
