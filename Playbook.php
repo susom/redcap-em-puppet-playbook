@@ -1,7 +1,7 @@
 <?php
 
-namespace Stanford\GIT;
-/** @var \Stanford\GIT\GIT $module **/
+namespace Stanford\Playbook;
+/** @var \Stanford\Playbook\Playbook $module **/
 
 /**
  * Created by PhpStorm.
@@ -12,7 +12,7 @@ namespace Stanford\GIT;
 
 use \REDCap;
 
-class GIT extends \ExternalModules\AbstractExternalModule
+class Playbook extends \ExternalModules\AbstractExternalModule
 {
 
     public function __construct()
@@ -35,7 +35,7 @@ class GIT extends \ExternalModules\AbstractExternalModule
     }
 
     public static function writeLog($obj, $detail, $type) {
-        $plugin_log_file = \ExternalModules\ExternalModules::getSystemSetting('GIT','log_path');
+        $plugin_log_file = \ExternalModules\ExternalModules::getSystemSetting('Playbook','log_path');
 
         // Get calling file using php backtrace to help label where the log entry is coming from
         $bt = debug_backtrace();

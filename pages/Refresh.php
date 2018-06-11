@@ -1,5 +1,5 @@
 <?php
-namespace Stanford\GIT;
+namespace Stanford\Playbook;
 
 use \REDCap;
 global $module;
