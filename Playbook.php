@@ -35,7 +35,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
     public static function writeLog($obj, $detail, $type) {
-        $plugin_log_file = \ExternalModules\ExternalModules::getSystemSetting('Playbook','log_path');
+        $plugin_log_file = \ExternalModules\ExternalModules::getSystemSetting('redcap-em-puppet-playbook','log_path');
 
         // Get calling file using php backtrace to help label where the log entry is coming from
         $bt = debug_backtrace();
