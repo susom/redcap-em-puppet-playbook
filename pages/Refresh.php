@@ -8,7 +8,7 @@ namespace Stanford\Playbook;
 use \REDCap;
 /** @var \Stanford\Playbook\Playbook $module **/
 
-REDCap::logEvent(USERID . " is initiating a DEV repo pull from GIT at " . date("Y-m-d"));
+REDCap::logEvent(USERID . " is initiating a DEV repo pull from GIT at " . date("Y-m-d H:i:s"));
 
 // This EM is not associated with a project since it is a system utility.
 // Save the git info in the System Settings.
@@ -20,8 +20,7 @@ $body = array("host_config_key" => $token);
 $context_type = "application/json";
 $timeout = null;    // is this seconds? not sure what to put
 
-//$response =  http_post($git_url, $body, $timeout, $context_type);
-$response = false;
+$response =  http_post($git_url, $body, $timeout, $context_type);
 if ($response == false) {
     $message = "There was a problem updating the server instance using the puppet playbook.";
     echo "<div>" . $message . "</div><br>";
