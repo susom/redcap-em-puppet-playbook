@@ -6,7 +6,7 @@
   "description": "Automated Puppet Playbook task initiation",
 
   "no-auth-pages": [
-    "pages/Refresh"
+    "pages/api"
   ],
 
   "authors": [
@@ -27,11 +27,6 @@
 
   "links": {
     "control-center": [
-      {
-        "name": "Playbook to update REDCap DEV",
-        "icon": "gear",
-        "url": "pages/Refresh.php"
-      },
       {
         "name": "Playbook Status",
         "icon": "gear",

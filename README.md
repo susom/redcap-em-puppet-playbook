@@ -1,14 +1,11 @@
-TODO:
+# Puppet Playbook
 
-Trigger refresh from git via external api url
+This utility module helps us with server/database related functions for our new docker-based deployment.
 
+Currently it does two things:
 
+### It allows you to trigger a 'git pull' from the parent VM to update the docker containers or source code
 
+You can also access this 'git pull' functionality from an api-based external url - see the status page in the control center for more information.
 
-This External Module will be used to checkout the master branch of GIT redcap-dev and update the REDCap server in the Dev directory.
-This module can be used during development to bring over new code or new changes.
-
-To perform a GIT pull, go to the REDCap DEV Control Panel and select the External Module page 'Playbook to update REDCap dev'.
-
-If the Refresh was successful, there will be no messages displayed.  If the Refresh was not successful,
-a status page will be displayed to indicate the update was not successful.
+### It allows you to update embedded reference urls to itself in the database which is useful after a database restore

@@ -1,16 +1,6 @@
 <?php
-
 namespace Stanford\Playbook;
 /** @var \Stanford\Playbook\Playbook $module **/
-
-/**
- * Created by PhpStorm.
- * User: LeeAnnY
- * Date: 6/1/2018
- * Time: 9:58 AM
- */
-
-use \REDCap;
 
 class Playbook extends \ExternalModules\AbstractExternalModule
 {
@@ -21,8 +11,10 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-dev-gen2.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
-            "plugin_log" => "/var/log/redcap/plugin_log_dev.log",
-            "auto_fix" => true
+            "plugin_log_file" => "/var/log/redcap/plugin_log_dev.log",
+            "edoc_path" => "/edocs/",
+            "force_ssl" => true,
+            "auto_fix" => true          // If called by cron, should we automatically commit changes
         ),
         "prod" => array(
             "db" => "redcap",
@@ -30,7 +22,9 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-p01.stanford.edu",
             "redcap_base_url" => "https://redcap-gen2.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
-            "plugin_log" => "/var/log/redcap/plugin_log.log",
+            "plugin_log_file" => "/var/log/redcap/plugin_log.log",
+            "edoc_path" => "/edocs/",
+            "force_ssl" => true,
             "auto_fix" => false
         ),
         "restore" => array(
@@ -39,7 +33,9 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-restore.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
-            "plugin_log" => "/var/log/redcap/plugin_log_restore.log",
+            "plugin_log_file" => "/var/log/redcap/plugin_log_restore.log",
+            "edoc_path" => "/edocs/",
+            "force_ssl" => true,
             "auto_fix" => true
         ),
         "test" => array(
@@ -48,15 +44,18 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-test.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
-            "plugin_log" => "/var/log/redcap/plugin_log_test.log",
+            "plugin_log_file" => "/var/log/redcap/plugin_log_test.log",
+            "edoc_path" => "/edocs/",
+            "force_ssl" => true,
             "auto_fix" => true
         ),
         "local" => array(
             "db" => "redcap_local",
             "hostname" => "localhost",
             "username" => "redcap_user",
-            "redcap_base_url" => "http://localhost/",
-            "plugin_log" => "/tmp/plugin_log.log",
+            "redcap_base_url" => "http://localhost-abc/",
+            "plugin_log_file" => "/tmp/plugin_log.log",
+            "force_ssl" => false,
             "auto_fix" => false
         ),
         "local_jae" => array(
@@ -65,12 +64,11 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "username" => "redcap",
             "redcap_base_url" => "http://localhost/",
             "hook_functions_file" =>"github/web/hooks/framework/redcap_hooks.php",
-            "plugin_log" => "/tmp/plugin_log.log",
+            "plugin_log_file" => "/tmp/plugin_log.log",
+            "force_ssl" => false,
             "auto_fix" => false
         )
     );
-
-
 
 
     public function __construct()
@@ -79,33 +77,48 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
 
+    public function get_refresh_playbook_url() {
+        return $this->getUrl("pages/api",true,true);
+    }
+
+
+    /**
+     * This method calls ansible which triggers a puppet refresh of the current VM (host) including all docker instances on that server
+     * @return array
+     */
     public function refresh_playbook() {
         // This EM is not associated with a project since it is a system utility.
         // Save the git info in the System Settings.
         $url = $this->getSystemSetting("puppet_url");
         $token = $this->getSystemSetting("puppet_token");
 
+        if (empty($url) || empty($token)) {
+            $msg = "Unable to refresh playbook - required system parameters missing!";
+            $this::log($msg);
+            return array (FALSE, $msg);
+        }
+
+
         // Not sure if this should have body before host_config_key but I'm guessing not.
         $body = array("host_config_key" => $token);
         $context_type = "application/json";
-        $timeout = 60;    // is this seconds? not sure what to put
+        $timeout = 60;
+        $response = http_post($url, $body, $timeout, $context_type);
+        $response_json = json_decode($response,true);
+        $this::log($response, "Response");
+        $this::log($response_json, "Response Json");
 
-        $errors = array();
-
-        $response =  http_post($url, $body, $timeout, $context_type);
-        if ($response == false) {
+        if ($response_json == false) {
+            //TODO figure out why this is returning a non-201 code
             $message = "There was a problem updating the server instance using the puppet playbook.";
             $result = false;
             //REDCap::logEvent($message);
-
         } else {
             $message = "Playbook initiated - please check the redcap-operations channel in slack for details.";
             $result = true;
             // REDCap::logEvent($message);
         }
-
         return array($result,$message);
-        // empty($errors) ? array(true, "Playbook Refresh initiated...") : array(false, $errors);
     }
 
 
@@ -114,110 +127,110 @@ class Playbook extends \ExternalModules\AbstractExternalModule
      * the database, it may be necessary to modify settings in the database to reflect the new environment
      */
     public function cron_db_sync() {
-        $this::log("In dbFileSync");
-
-        list($success, $message) = $this->verifyEnvironment();
-        $this::log($success, $message);
+        // $this::log("In cron_db_sync for " . __CLASS__);
+        list($success, $message) = $this->verifyEnvironment("CRON");
     }
 
-    public function verifyEnvironment($dryrun = null) {
+    /**
+     * This verifies the database matches the server environment
+     * @param true $dryrun
+     * @return array
+     */
+    public function verifyEnvironment($dryrun = true) {
         global $db, $username, $hostname, $redcap_base_url;
 
         // Loop through server definitions to make sure all settings match
-        $success = false;
+        $success = true;
         $message = "";
 
         foreach ($this::$server_defs as $environment => $params) {
-            if ($db == $params['db'] && $username == $params['username'] && $hostname == $params['hostname']) {
+
+            if ($db == $params['db'] &&
+                $username == $params['username'] &&
+                $hostname == $params['hostname']) {
+
                 $server = $environment;
 
-                if ($redcap_base_url == $params['redcap_base_url']) {
+                if ($redcap_base_url == $params['redcap_base_url'] && $dryrun !== false) {
                     // All is good
-                    $success = true;
-                    $message = "Environment is $environment";
+                    $message = "Environment matches database for $environment";
                 } else {
-                    $this::log("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url']);
                     // Generate update queries:
 
-                    //update plugin logs
-                    list($result_log, $message_log) = $this::updateConfig('plugin_log', $params['plugin_log'], $dryrun);
-
-                    //update hook_functions_file
-                    if (isset($params['hook_functions_file'])) {
-                        list($result_hook, $message_hook) = $this::updateConfig('hook_functions_file', $params['hook_functions_file'], $dryrun);
+                    // Set default commit based on auto_fix if called from cron
+                    if ($dryrun === "CRON") {
+                        $dryrun = !$params['auto_fix'];
+                        $this::log("Setting dryrun to " . ($dryrun ? "TRUE" : "FALSE"));
+                        // $this::log($dryrun, "Dryrun Was Not Null");
+                    } else {
+                        // $this::log($dryrun, "Dryrun Is Not Null");
                     }
 
+                    $results = array();
 
-                    //update
-                    if ($dryrun == null) $dryrun = $params['auto_fix'];
-                    list($success, $message) = $this::updateDbInstance($redcap_base_url, $params['redcap_base_url'], $dryrun);
+                    $this::log("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":""));
 
+                    $results[] = "Updating Database for " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":"");
 
+                    // Update base_url
+                    $results[] = $this::updateConfig('redcap_base_url', $params['redcap_base_url'], $dryrun);
+
+                    // Update plugin logs
+                    if (!empty($params['plugin_log'])) $results[] = $this::updateConfig('plugin_log', $params['plugin_log'], $dryrun);
+
+                    // Update hook_functions_file
+                    if (!empty($params['hook_functions_file'])) $results[] = $this::updateConfig('hook_functions_file', $params['hook_functions_file'], $dryrun);
+
+                    // Update edoc_path
+                    if (!empty($params['edoc_path'])) $results[] = $this::updateConfig('edoc_path', $params['edoc_path'], $dryrun);
+
+                    // Update other more complex queries queries
+                    $results[] = $this::updateSql($redcap_base_url, $params['redcap_base_url'], $dryrun);
+
+                    if ($params['force_ssl']) {
+                        $http_base_url = str_replace("https://","http://",$redcap_base_url);
+                        $results[] = "Forcing SSL switch to non-ssl links";
+                        $results[] = $this::updateSql($http_base_url, $params['redcap_base_url'], $dryrun);
+                    }
+
+                    $message = implode("\n", $results);
 
                 }
 
                 break;
             } else {
-                $this::log("This is not the $environment server");
+                // $this::log("This is not the $environment server");
             }
         }
 
         if (empty($server)) {
             // No match was made
-            // TODO: error handler
             $success = false;
             $message = "Unable to match current environment to any defined server";
         }
-
-        $this::log($success, $message);
-
+        // $this::log($success, $message);
         return array($success, $message);
     }
 
 
-    public static function updateConfig($field_name, $new_value, $dryrun = false) {
-        self::log("Updating db: setting field $field_name to $new_value");
-
-        $success = true;
-        $results = array();
-
+    public static function updateConfig($field_name, $new_value, $dryrun) {
+        // self::log("Updating db: setting field $field_name to $new_value");
         $sql = "update redcap_config set value = '$new_value' where field_name = '$field_name' limit 1;";
-        $results[] = "Updating $field_name to $new_value: " . self::doTransaction($sql,$dryrun);
-
-        return array($success, implode("\n", $results));
+        return "Update of $field_name to $new_value: " . self::doTransaction($sql,$dryrun);
     }
 
-    public static function updateDbInstance($old_uri, $new_uri, $dryrun = false) {
-        self::log("Updating db from $old_uri to $new_uri");
+    public static function updateSql($old_uri, $new_uri, $dryrun) {
+        // self::log("Updating db from $old_uri to $new_uri");
 
-        $success = true;
         $results = array();
 
-        // $errors = array();
-        //
-        // $old_uri = @self::$db_to_uri_map[$old_instance];
-        // $new_uri = @self::$db_to_uri_map[$new_instance];
-        // $old_uri = "old"; //@self::$db_to_uri_map[$old_instance];
-        // $new_uri = "new"; //@self::$db_to_uri_map[$new_instance];
-        //
-        // if (empty($old_uri)) $errors[] = "No URI defined for $old_instance";
-        // if (empty($new_uri)) $errors[] = "No URI defined for $new_instance";
-        //
-        //
-
-        $sql = "update redcap_config set value = '$new_uri' where field_name = 'redcap_base_url' limit 1;";
-        $results[] = "Updating redcap_base_url to $new_uri: " . self::doTransaction($sql,$dryrun);
-
-
         $sql = "update redcap_external_links set link_url = replace(link_url, '$old_uri', '$new_uri') where instr(link_url, '$old_uri') > 0";
-        $results[] = "Updating External Links: " . self::doTransaction($sql, $dryrun);
-
+        $results[] = "Update of External Links: " . self::doTransaction($sql, $dryrun);
 
         $sql = "update redcap_projects set data_entry_trigger_url = replace(data_entry_trigger_url, '$old_uri', '$new_uri') where instr(data_entry_trigger_url, '$old_uri') > 0";
-        $results[] = "Updating DET Urls: " . self::doTransaction($sql, $dryrun);
+        $results[] = "Update of DET Urls: " . self::doTransaction($sql, $dryrun);
 
-
-        return array($success, implode("\n", $results));
+        return implode("\n", $results);
     }
 
     public static function doTransaction($sql, $dryrun) {
@@ -257,7 +270,8 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
     public static function writeLog($obj, $detail, $type) {
-        $plugin_log_file = ""; //"/var/log/redcap/puppet_playbook.log";
+        global $plugin_log_file;
+        //$plugin_log_file = ""; //"/var/log/redcap/puppet_playbook.log";
 
         // Get calling file using php backtrace to help label where the log entry is coming from
         $bt = debug_backtrace();

@@ -15,9 +15,10 @@ if (!SUPER_USER) {
     exit();
 }
 
-$module::log($_POST);
+// $module::log($_POST);
 
 
+// Handle refreshing the puppet button
 if (!empty($_POST['refresh_puppet'])) {
     list($result, $message) = $module->refresh_playbook();
 
@@ -29,6 +30,7 @@ if (!empty($_POST['refresh_puppet'])) {
 }
 
 
+// Handle a forced update of the environment
 if (!empty($_POST['update_environment'])) {
     // Do update
     list($success, $message) = $module->verifyEnvironment(false);
@@ -47,27 +49,26 @@ if (!empty($_POST['update_environment'])) {
                 <h4><?php echo $module->getModuleName() ?></h4>
             </div>
             <div class="panel-body">
-                <div>
-                    <p>This tool helps administer various versions of REDCap and maintain links within that version.
-
-                    <ul>
-                        <li>There is no confirmation - when you press encode it will replace any existing value.</li>
-                        <li>The encoded versions are salt-specific so you cannot transfer the encoded value to a server with a different salt</li>
-                    </ul>
-                </div>
+                <h4>Maintaining Server and Database Environments In-Sync</h4>
+                <p>This tool helps update a database if it has been cloned from another environment.</p>
 
                 <div class="alert <?php echo $success ? "alert-success" : "alert-danger"; ?>"><pre class="output"><?php echo $message ?></pre></div>
-
-
-                <button class="btn btn-primary" name="refresh_puppet" value="1">Refresh Puppet</button>
-
                 <button class="btn btn-primary" name="update_environment" value="1">Update Environment</button>
 
-                <div class="input-group col-lg-5">
-                </div>
+                <hr>
+                <h4>Calling RefreshPlaybook</h4>
+                <p>The playbook controls the currently deployed version of code on the server.  If there are updates to
+                the linked repos, you can trigger a fresh pull by issuing this command.</p>
+                <p>
+                    Alternately, if you wish to automatically trigger the playbook from another external source, you can do so using this url:
+                </p>
+                <pre><?php echo $module->get_refresh_playbook_url() ?></pre>
+                <button class="btn btn-primary" name="refresh_puppet" value="1">Refresh Puppet</button>
+
             </div>
         </div>
     </form>
+
 
 <style>
     .alert { border: 0 !important; }
