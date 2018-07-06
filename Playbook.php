@@ -162,9 +162,14 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
                 $server = $environment;
 
+                $results = array();
+
+                $results[] = "Settings for $server:\n" . var_export($params, true) . "\n-------------------";
+
+
                 if ($redcap_base_url == $params['redcap_base_url'] && $dryrun !== false) {
                     // All is good
-                    $message = "Environment matches database for $environment";
+                    $results[] = "Environment matches database for $environment";
                 } else {
                     // Generate update queries:
 
@@ -176,8 +181,6 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                     } else {
                         // $this::log($dryrun, "Dryrun Is Not Null");
                     }
-
-                    $results = array();
 
                     $results[] = "Settings for $server:\n" . var_export($params, true) . "\n-------------------";
 
@@ -205,10 +208,9 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                         $results[] = "Forcing SSL switch to non-ssl links";
                         $results[] = $this::updateSql($http_base_url, $params['redcap_base_url'], $dryrun);
                     }
-
-                    $message = implode("\n", $results);
-
                 }
+
+                $message = implode("\n", $results);
 
                 break;
             } else {
