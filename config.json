@@ -31,19 +31,28 @@
         "name": "Playbook to update REDCap DEV",
         "icon": "gear",
         "url": "pages/Refresh.php"
+      },
+      {
+        "name": "Playbook Status",
+        "icon": "gear",
+        "url": "pages/Status.php"
       }
     ],
     "project": [
     ]
   },
 
-  "system-settings": [
+  "crons": [
     {
-      "key": "log_path",
-      "name": "<b>Full server path to log file</b>",
-      "required": false,
-      "type": "text"
-    },
+      "cron_name": "cron_playbook_db_sync",
+      "cron_description": "Cron that runs every minute to verify db and filesystem are in sync",
+      "method": "cron_db_sync",
+      "cron_frequency": "60",
+      "cron_max_run_time": "300"
+    }
+  ],
+
+  "system-settings": [
     {
       "key": "puppet_url",
       "name": "<b>URL to Playbook</b>",
