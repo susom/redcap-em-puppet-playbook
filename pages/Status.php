@@ -57,14 +57,19 @@ if (!empty($_POST['update_environment'])) {
 
                 <hr>
                 <h4>Calling RefreshPlaybook</h4>
-                <p>The playbook controls the currently deployed version of code on the server.  If there are updates to
-                the linked repos, you can trigger a fresh pull by issuing this command.</p>
                 <p>
-                    Alternately, if you wish to automatically trigger the playbook from another external source, you can do so using this url:
+                    The playbook controls the currently deployed version of code on the server.  If there are updates to
+                the linked repos, you can call an ansible script from this page that will cause puppet to re-pull or configure the defined REDCap instances on this Virtual Machine.
                 </p>
-                <pre><?php echo $module->get_refresh_playbook_url() ?></pre>
-                <button class="btn btn-primary" name="refresh_puppet" value="1">Refresh Puppet</button>
-
+                <?php if (! $module->is_playbook_configured()) { ?>
+                    <div class="alert alert-danger">The playbook has not been configured.  Please see the external module configuration page.</div>
+                <?php } else { ?>
+                    <p>
+                        Alternately, if you wish to automatically trigger the playbook from another external source, you can do so using this url provided it is configured and tested:
+                    </p>
+                    <pre><?php echo $module->get_refresh_playbook_url() ?></pre>
+                    <button class="btn btn-primary" name="refresh_puppet" value="1">Refresh Puppet</button>
+                <?php } ?>
             </div>
         </div>
     </form>

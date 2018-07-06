@@ -82,6 +82,17 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
 
+    public function is_playbook_configured() {
+        $url = $this->getSystemSetting("puppet_url");
+        $token = $this->getSystemSetting("puppet_token");
+        if (empty($url) || empty($token)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+
     /**
      * This method calls ansible which triggers a puppet refresh of the current VM (host) including all docker instances on that server
      * @return array
@@ -167,6 +178,8 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                     }
 
                     $results = array();
+
+                    $results[] = "Settings for $server:\n" . var_export($params, true) . "\n-------------------";
 
                     $this::log("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":""));
 
