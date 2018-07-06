@@ -21,6 +21,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-dev-gen2.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
+            "plugin_log" => "/var/log/redcap/plugin_log_dev.log",
             "auto_fix" => true
         ),
         "prod" => array(
@@ -29,6 +30,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-p01.stanford.edu",
             "redcap_base_url" => "https://redcap-gen2.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
+            "plugin_log" => "/var/log/redcap/plugin_log.log",
             "auto_fix" => false
         ),
         "restore" => array(
@@ -37,6 +39,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-restore.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
+            "plugin_log" => "/var/log/redcap/plugin_log_restore.log",
             "auto_fix" => true
         ),
         "test" => array(
@@ -45,6 +48,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-test.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
+            "plugin_log" => "/var/log/redcap/plugin_log_test.log",
             "auto_fix" => true
         ),
         "local" => array(
@@ -52,6 +56,16 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "hostname" => "localhost",
             "username" => "redcap_user",
             "redcap_base_url" => "http://localhost/",
+            "plugin_log" => "/tmp/plugin_log.log",
+            "auto_fix" => false
+        ),
+        "local_jae" => array(
+            "db" => "redcap",
+            "hostname" => "localhost",
+            "username" => "redcap",
+            "redcap_base_url" => "http://localhost/",
+            "hook_functions_file" =>"github/web/hooks/framework/redcap_hooks.php",
+            "plugin_log" => "/tmp/plugin_log.log",
             "auto_fix" => false
         )
     );
@@ -125,8 +139,21 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                     $this::log("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url']);
                     // Generate update queries:
 
+                    //update plugin logs
+                    list($result_log, $message_log) = $this::updateConfig('plugin_log', $params['plugin_log'], $dryrun);
+
+                    //update hook_functions_file
+                    if (isset($params['hook_functions_file'])) {
+                        list($result_hook, $message_hook) = $this::updateConfig('hook_functions_file', $params['hook_functions_file'], $dryrun);
+                    }
+
+
+                    //update
                     if ($dryrun == null) $dryrun = $params['auto_fix'];
                     list($success, $message) = $this::updateDbInstance($redcap_base_url, $params['redcap_base_url'], $dryrun);
+
+
+
                 }
 
                 break;
@@ -148,6 +175,17 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
 
+    public static function updateConfig($field_name, $new_value, $dryrun = false) {
+        self::log("Updating db: setting field $field_name to $new_value");
+
+        $success = true;
+        $results = array();
+
+        $sql = "update redcap_config set value = '$new_value' where field_name = '$field_name' limit 1;";
+        $results[] = "Updating $field_name to $new_value: " . self::doTransaction($sql,$dryrun);
+
+        return array($success, implode("\n", $results));
+    }
 
     public static function updateDbInstance($old_uri, $new_uri, $dryrun = false) {
         self::log("Updating db from $old_uri to $new_uri");
