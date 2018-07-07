@@ -8,6 +8,14 @@ namespace Stanford\Playbook;
 
 $module::log($_SERVER['REMOTE_ADDR'], "Call to Refresh Playbook from API");
 
-$result = $module->refresh_playbook();
+list($success,$message) = $module->refresh_playbook();
 
-$module::log($result, "Result");
+$module::log($success, $message);
+
+if ($success) {
+    echo $message;
+} else {
+    http_response_code(404);
+    echo $message;
+}
+
