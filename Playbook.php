@@ -115,19 +115,13 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         $context_type = "application/json";
         $timeout = 60;
         $response = http_post($url, $body, $timeout, $context_type);
-        $response_json = json_decode($response,true);
-        $this::log($response, "Response");
-        $this::log($response_json, "Response Json");
 
-        if ($response_json == false) {
-            //TODO figure out why this is returning a non-201 code
+        if ($response === false) {
             $message = "There was a problem updating the server instance using the puppet playbook.";
             $result = false;
-            //REDCap::logEvent($message);
         } else {
             $message = "Playbook initiated - please check the redcap-operations channel in slack for details.";
             $result = true;
-            // REDCap::logEvent($message);
         }
         return array($result,$message);
     }
@@ -182,8 +176,6 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                         // $this::log($dryrun, "Dryrun Is Not Null");
                     }
 
-                    $results[] = "Settings for $server:\n" . var_export($params, true) . "\n-------------------";
-
                     $this::log("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":""));
 
                     $results[] = "Updating Database for " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":"");
@@ -203,9 +195,9 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                     // Update other more complex queries queries
                     $results[] = $this::updateSql($redcap_base_url, $params['redcap_base_url'], $dryrun);
 
-                    if ($params['force_ssl']) {
-                        $http_base_url = str_replace("https://","http://",$redcap_base_url);
-                        $results[] = "Forcing SSL switch to non-ssl links";
+                    if ($params['force_ssl'] === true) {
+                        $http_base_url = str_replace("https:","http:",$redcap_base_url);
+                        $results[] = "Re-running to move any non-SSL urls to the new url:";
                         $results[] = $this::updateSql($http_base_url, $params['redcap_base_url'], $dryrun);
                     }
                 }

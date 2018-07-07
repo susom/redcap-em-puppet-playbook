@@ -25,7 +25,7 @@ if (!empty($_POST['refresh_puppet'])) {
     if ($result) {
         echo "<div class='alert alert-success'>" . $message . "</div>";
     } else {
-        echo "<div class='alert alder-danger'>" . $message . "</div>";
+        echo "<div class='alert alert-danger'>" . $message . "</div>";
     }
 }
 
