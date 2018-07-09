@@ -29,7 +29,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         ),
         "prod_r1" => array(
             "db" => "redcap",
-            "username" => "redcap_gen2",
+            "username" => "redcap-gen2",
             "hostname" => "cci-mysql-rc-02.stanford.edu",
             "redcap_base_url" => "https://redcap.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
