@@ -27,6 +27,17 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "force_ssl" => true,
             "auto_fix" => false
         ),
+        "prod_r1" => array(
+            "db" => "redcap",
+            "username" => "redcap_gen2",
+            "hostname" => "cci-mysql-rc-02.stanford.edu",
+            "redcap_base_url" => "https://redcap-gen2.stanford.edu/",
+            "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
+            "plugin_log_file" => "/var/log/redcap/plugin_log.log",
+            "edoc_path" => "/edocs/",
+            "force_ssl" => true,
+            "auto_fix" => false
+        ),
         "restore" => array(
             "db" => "redcap",
             "username" => "redcap_webapp",
