@@ -161,14 +161,10 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
         foreach ($this::$server_defs as $environment => $params) {
 
-            if ($db == $params['db'] &&
-                $username == $params['username'] &&
-                $hostname == $params['hostname']) {
+            if ($db == $params['db'] && $username == $params['username'] && $hostname == $params['hostname']) {
 
                 $server = $environment;
-
                 $results = array();
-
                 $results[] = "Settings for $server:\n" . var_export($params, true) . "\n-------------------";
 
 
@@ -217,7 +213,10 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
                 break;
             } else {
-                // $this::log("This is not the $environment server");
+                $this::log("This is not the $environment server");
+                if ($db !== $params['db']) $this::log("db");
+                if ($username !== $params['username']) $this::log("username");
+                if ($hostname !== $params['hostname']) $this::log("hostname");
             }
         }
 
