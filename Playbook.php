@@ -64,7 +64,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "db" => "redcap_local",
             "hostname" => "localhost",
             "username" => "redcap_user",
-            "redcap_base_url" => "http://localhost-abc/",
+            "redcap_base_url" => "http://localhost/",
             "plugin_log_file" => "/tmp/plugin_log.log",
             "force_ssl" => false,
             "auto_fix" => false
@@ -224,7 +224,15 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         if (empty($server)) {
             // No match was made
             $success = false;
-            $message = "Unable to match current environment to any defined server";
+            $results = array();
+            $results[] = "Unable to match current environment to any defined server";
+            $results[] = "db: $db";
+            $results[] = "username: $username";
+            $results[] = "hostname: $hostname";
+            $results[] = "redcap_base_url: $redcap_base_url";
+            $results[] = "-------------------------------";
+            $results[] = var_export($this::$server_defs,true);
+            $message = implode("\n\t",$results);
         }
         // $this::log($success, $message);
         return array($success, $message);

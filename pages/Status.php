@@ -38,7 +38,7 @@ if (!empty($_POST['update_environment'])) {
 } else {
     // Do dryrun
     list($success, $message) = $module->verifyEnvironment(true);
-    $message = "Updating the environment will have the following changes:\n\n" . $message;
+    $message = "Updating the environment will have the following changes:\n\n" . $message . ($success ? "PASS" : "FAIL");
 }
 
 ?>
