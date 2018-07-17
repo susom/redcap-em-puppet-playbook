@@ -18,19 +18,8 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         ),
         "prod" => array(
             "db" => "redcap",
-            "username" => "redcap_webapp",
+            "username" => "redcap_gen2",
             "hostname" => "redcap-db-p01.stanford.edu",
-            "redcap_base_url" => "https://redcap-gen2.stanford.edu/",
-            "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
-            "plugin_log_file" => "/var/log/redcap/plugin_log.log",
-            "edoc_path" => "/edocs/",
-            "force_ssl" => true,
-            "auto_fix" => false
-        ),
-        "prod_r1" => array(
-            "db" => "redcap",
-            "username" => "redcap-gen2",
-            "hostname" => "cci-mysql-rc-02.stanford.edu",
             "redcap_base_url" => "https://redcap.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
             "plugin_log_file" => "/var/log/redcap/plugin_log.log",
@@ -40,7 +29,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         ),
         "restore" => array(
             "db" => "redcap",
-            "username" => "redcap_webapp",
+            "username" => "redcap_gen2",
             "hostname" => "redcap-db-d03.stanford.edu",
             "redcap_base_url" => "https://redcap-restore.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
@@ -213,10 +202,10 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
                 break;
             } else {
-                $this::log("This is not the $environment server");
-                if ($db !== $params['db']) $this::log("db");
-                if ($username !== $params['username']) $this::log("username");
-                if ($hostname !== $params['hostname']) $this::log("hostname");
+                // $this::log("This is not the $environment server");
+                // if ($db !== $params['db']) $this::log("db");
+                // if ($username !== $params['username']) $this::log("username");
+                // if ($hostname !== $params['hostname']) $this::log("hostname");
             }
         }
 
