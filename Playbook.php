@@ -18,7 +18,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         ),
         "prod" => array(
             "db" => "redcap",
-            "username" => "redcap_gen2",
+            "username" => "redcap_webapp",
             "hostname" => "redcap-db-p01.stanford.edu",
             "redcap_base_url" => "https://redcap.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
