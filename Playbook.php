@@ -244,8 +244,12 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         $sql = "update redcap_projects set data_entry_trigger_url = replace(data_entry_trigger_url, '$old_uri', '$new_uri') where instr(data_entry_trigger_url, '$old_uri') > 0";
         $results[] = "Update of DET Urls: " . self::doTransaction($sql, $dryrun);
 
+        $sql = "update redcap_projects set data_entry_trigger_url = REGEXP_REPLACE (data_entry_trigger_url, '^https://redcap[\\-a-zA-Z0-9]*.stanford.edu', '$new_uri') where data_entry_trigger_url REGEXP 'https://redcap[\\-a-zA-Z0-9]*.stanford.edu.*' > 0";
+        $results[] = "Update of DET Using RegEx Url: " . self::doTransaction($sql, $dryrun);
+
         return implode("\n", $results);
     }
+
 
     public static function doTransaction($sql, $dryrun) {
 
