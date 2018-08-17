@@ -105,7 +105,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
         if (empty($url) || empty($token)) {
             $msg = "Unable to refresh playbook - required system parameters missing!";
-            $this::log($msg);
+            $this->emLog($msg);
             return array (FALSE, $msg);
         }
 
@@ -132,14 +132,15 @@ class Playbook extends \ExternalModules\AbstractExternalModule
      * the database, it may be necessary to modify settings in the database to reflect the new environment
      */
     public function cron_db_sync() {
-        // $this::log("In cron_db_sync for " . __CLASS__);
         list($success, $message) = $this->verifyEnvironment("CRON");
     }
 
     /**
      * This verifies the database matches the server environment
+     *
      * @param true $dryrun
      * @return array
+     * @throws \Exception
      */
     public function verifyEnvironment($dryrun = true) {
         global $db, $username, $hostname, $redcap_base_url;
@@ -166,13 +167,12 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                     // Set default commit based on auto_fix if called from cron
                     if ($dryrun === "CRON") {
                         $dryrun = !$params['auto_fix'];
-                        $this::log("Setting dryrun to " . ($dryrun ? "TRUE" : "FALSE"));
-                        // $this::log($dryrun, "Dryrun Was Not Null");
+                        $this->emDebug("Setting dryrun to " . ($dryrun ? "TRUE" : "FALSE"));
                     } else {
-                        // $this::log($dryrun, "Dryrun Is Not Null");
+                        $this->emDebug($dryrun, "Dryrun Is Not Null");
                     }
 
-                    $this::log("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":""));
+                    $this->emLog("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":""));
 
                     $results[] = "Updating Database for " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":"");
 
@@ -260,7 +260,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         db_query($sql);
         $rows = "Rows affected: " . db_affected_rows();
 
-        self::log($sql, "SQL" . ($dryrun ? " (dryrun)":"") . " => " . $rows . " rows affected");
+        //self::log($sql, "SQL" . ($dryrun ? " (dryrun)":"") . " => " . $rows . " rows affected");
 
         if ($dryrun) {
             db_query("ROLLBACK");
@@ -274,71 +274,26 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
 
 
-    public static function log($obj = "Here", $detail = null, $type = "INFO") {
-        self::writeLog($obj, $detail, $type);
+    /**
+     * Logging Functions
+     * @throws \Exception
+     */
+    function emLog() {
+        $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
+        $emLogger->log($this->PREFIX, func_get_args(), "INFO");
     }
 
-    public static function debug($obj = "Here", $detail = null, $type = "DEBUG") {
-        self::writeLog($obj, $detail, $type);
+    function emDebug() {
+        // Check if debug enabled
+        if ($this->getSystemSetting('enable-system-debug-logging') || $this->getProjectSetting('enable-project-debug-logging')) {
+            $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
+            $emLogger->log($this->PREFIX, func_get_args(), "DEBUG");
+        }
     }
 
-    public static function error($obj = "Here", $detail = null, $type = "ERROR") {
-        self::writeLog($obj, $detail, $type);
-        //TODO: BUBBLE UP ERRORS FOR REVIEW!
-    }
-
-    public static function writeLog($obj, $detail, $type) {
-        global $plugin_log_file;
-        //$plugin_log_file = ""; //"/var/log/redcap/puppet_playbook.log";
-
-        // Get calling file using php backtrace to help label where the log entry is coming from
-        $bt = debug_backtrace();
-        $calling_file = $bt[1]['file'];
-        $calling_line = $bt[1]['line'];
-        $calling_function = $bt[3]['function'];
-        if (empty($calling_function)) $calling_function = $bt[2]['function'];
-        if (empty($calling_function)) $calling_function = $bt[1]['function'];
-        // if (empty($calling_function)) $calling_function = $bt[0]['function'];
-
-        // Convert arrays/objects into string for logging
-        if (is_array($obj)) {
-            $msg = "(array): " . print_r($obj,true);
-        } elseif (is_object($obj)) {
-            $msg = "(object): " . print_r($obj,true);
-        } elseif (is_string($obj) || is_numeric($obj)) {
-            $msg = $obj;
-        } elseif (is_bool($obj)) {
-            $msg = "(boolean): " . ($obj ? "true" : "false");
-        } else {
-            $msg = "(unknown): " . print_r($obj,true);
-        }
-
-        // Prepend prefix
-        if ($detail) $msg = "[$detail] " . $msg;
-
-        // Build log row
-        $output = array(
-            date( 'Y-m-d H:i:s' ),
-            empty($project_id) ? "-" : $project_id,
-            basename($calling_file, '.php'),
-            $calling_line,
-            $calling_function,
-            $type,
-            $msg
-        );
-
-        // Output to plugin log if defined, else use error_log
-        if (!empty($plugin_log_file)) {
-            file_put_contents(
-                $plugin_log_file,
-                implode("\t",$output) . "\n",
-                FILE_APPEND
-            );
-        }
-        if (!file_exists($plugin_log_file)) {
-            // Output to error log
-            error_log(implode("\t",$output));
-        }
+    function emError() {
+        $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
+        $emLogger->log($this->PREFIX, func_get_args(), "ERROR");
     }
 
 }

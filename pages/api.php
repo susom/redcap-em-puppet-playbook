@@ -6,11 +6,8 @@ namespace Stanford\Playbook;
     Call API service to pull from git dev branch to server dev branch
 */
 
-$module::log($_SERVER['REMOTE_ADDR'], "Call to Refresh Playbook from API");
 
 list($success,$message) = $module->refresh_playbook();
-
-$module::log($success, $message);
 
 if ($success) {
     echo $message;
@@ -19,3 +16,4 @@ if ($success) {
     echo $message;
 }
 
+$module->emLog($_SERVER['REMOTE_ADDR'], "Call to Refresh Playbook from API", $success, $message);
