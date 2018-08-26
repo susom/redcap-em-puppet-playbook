@@ -2,7 +2,6 @@
 
 This utility module helps us with server/database related functions for our new docker-based deployment.
 
-Currently it does two things:
 
 ### It allows you to trigger a 'git pull' from the parent VM to update the docker containers or source code
 
