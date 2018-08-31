@@ -9,7 +9,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             "db" => "redcap_dev",
             "username" => "redcap_dev",
             "hostname" => "redcap-db-d03.stanford.edu",
-            "redcap_base_url" => "https://redcap-dev-gen2.stanford.edu/",
+            "redcap_base_url" => "https://redcap-dev.stanford.edu/",
             "hook_functions_file" => "/var/www/html/hooks/framework/redcap_hooks.php",
             "plugin_log_file" => "/var/log/redcap/plugin_log_dev.log",
             "edoc_path" => "/edocs/",
@@ -133,6 +133,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
      */
     public function cron_db_sync() {
         list($success, $message) = $this->verifyEnvironment("CRON");
+        $this->emDebug("cron_db_sync", $success, $message);
     }
 
     /**

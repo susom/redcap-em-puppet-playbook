@@ -59,6 +59,12 @@
       "name": "<b>token to Playbook</b>",
       "required": true,
       "type": "text"
+    },
+    {
+      "key": "enable-system-debug-logging",
+      "name": "<b>Enable Debug Logging (system-wide)</b>",
+      "required": false,
+      "type": "checkbox"
     }
   ],
 
