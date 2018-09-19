@@ -170,7 +170,8 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                         $dryrun = !$params['auto_fix'];
                         $this->emDebug("Setting dryrun to " . ($dryrun ? "TRUE" : "FALSE"));
                     } else {
-                        $this->emDebug($dryrun, "Dryrun Is Not Null");
+                        // NOT A CRON
+                        $this->emDebug("Dryrun value is:", $dryrun);
                     }
 
                     $this->emLog("Database is reporting " . $redcap_base_url . " but server environment should be " . $params['redcap_base_url'] . ($dryrun ? " (dryrun)":""));
@@ -245,7 +246,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         $sql = "update redcap_projects set data_entry_trigger_url = replace(data_entry_trigger_url, '$old_uri', '$new_uri') where instr(data_entry_trigger_url, '$old_uri') > 0";
         $results[] = "Update of DET Urls: " . self::doTransaction($sql, $dryrun);
 
-        $sql = "update redcap_projects set data_entry_trigger_url = REGEXP_REPLACE (data_entry_trigger_url, '^https://redcap[\\-a-zA-Z0-9]*.stanford.edu', '$new_uri') where data_entry_trigger_url REGEXP 'https://redcap[\\-a-zA-Z0-9]*.stanford.edu.*' > 0";
+        $sql = "update redcap_projects set data_entry_trigger_url = REGEXP_REPLACE (data_entry_trigger_url, '^https://redcap[\\-a-zA-Z0-9]*.stanford.edu/', '$new_uri') where data_entry_trigger_url REGEXP 'https://redcap[\\-a-zA-Z0-9]*.stanford.edu.*' > 0";
         $results[] = "Update of DET Using RegEx Url: " . self::doTransaction($sql, $dryrun);
 
         return implode("\n", $results);
