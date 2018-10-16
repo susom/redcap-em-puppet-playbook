@@ -2,8 +2,12 @@
 namespace Stanford\Playbook;
 /** @var \Stanford\Playbook\Playbook $module **/
 
+require_once "emLoggerTrait.php";
+
+
 class Playbook extends \ExternalModules\AbstractExternalModule
 {
+    use emLoggerTrait;
     static $server_defs = array(
         "dev" => array(
             "db" => "redcap_dev",
@@ -272,30 +276,6 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         db_query("SET AUTOCOMMIT=1");
 
         return $rows;
-    }
-
-
-
-    /**
-     * Logging Functions
-     * @throws \Exception
-     */
-    function emLog() {
-        $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
-        $emLogger->emLog($this->PREFIX, func_get_args(), "INFO");
-    }
-
-    function emDebug() {
-        // Check if debug enabled
-        if ($this->getSystemSetting('enable-system-debug-logging') || $this->getProjectSetting('enable-project-debug-logging')) {
-            $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
-            $emLogger->emLog($this->PREFIX, func_get_args(), "DEBUG");
-        }
-    }
-
-    function emError() {
-        $emLogger = \ExternalModules\ExternalModules::getModuleInstance('em_logger');
-        $emLogger->emLog($this->PREFIX, func_get_args(), "ERROR");
     }
 
 }
