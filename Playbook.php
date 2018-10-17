@@ -247,6 +247,9 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         $sql = "update redcap_external_links set link_url = replace(link_url, '$old_uri', '$new_uri') where instr(link_url, '$old_uri') > 0";
         $results[] = "Update of External Links: " . self::doTransaction($sql, $dryrun);
 
+        $sql = "update redcap_config set value = replace(value, '$old_uri', '$new_uri') where instr(value, '$old_uri') > 0";
+        $results[] = "Update of REDCap Config Links: " . self::doTransaction($sql, $dryrun);
+
         $sql = "update redcap_projects set data_entry_trigger_url = replace(data_entry_trigger_url, '$old_uri', '$new_uri') where instr(data_entry_trigger_url, '$old_uri') > 0";
         $results[] = "Update of DET Urls: " . self::doTransaction($sql, $dryrun);
 
