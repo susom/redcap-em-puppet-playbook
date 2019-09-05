@@ -233,12 +233,26 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
 
+    /**
+     * Update redcap config
+     * @param $field_name
+     * @param $new_value
+     * @param $dryrun
+     * @return string
+     */
     public static function updateConfig($field_name, $new_value, $dryrun) {
         // self::log("Updating db: setting field $field_name to $new_value");
         $sql = "update redcap_config set value = '$new_value' where field_name = '$field_name' limit 1;";
         return "Update of $field_name to $new_value: " . self::doTransaction($sql,$dryrun);
     }
 
+    /**
+     * Update a bunch of url references
+     * @param $old_uri
+     * @param $new_uri
+     * @param $dryrun
+     * @return string
+     */
     public static function updateSql($old_uri, $new_uri, $dryrun) {
         // self::log("Updating db from $old_uri to $new_uri");
 
@@ -260,6 +274,12 @@ class Playbook extends \ExternalModules\AbstractExternalModule
     }
 
 
+    /**
+     * Execute SQL as part of a transaction
+     * @param $sql
+     * @param $dryrun
+     * @return string
+     */
     public static function doTransaction($sql, $dryrun) {
 
         // Begin transaction
