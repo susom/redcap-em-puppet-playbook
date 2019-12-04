@@ -158,8 +158,8 @@ if (!empty($_POST['update_environment'])) {
 
 <script>
     $(document).ready( function() {
-        window.setInterval(checkCode, 1000);
-        // window.setTimeout(checkCode, 1000);
+        // window.setInterval(checkCode, 1000);
+        window.setTimeout(checkCode, 1000);
     });
 
     function checkCode() {
@@ -178,6 +178,10 @@ if (!empty($_POST['update_environment'])) {
                     .removeClass(function (index, className) { return (className.match (/(^|\s)alert-\S+/g) || []).join(' '); })
                     .addClass('alert alert-secondary');
             }
+
+            // Check a second later...
+            window.setTimeout(checkCode, 1000);
+
         });
     }
 
