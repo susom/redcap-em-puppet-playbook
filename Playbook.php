@@ -118,7 +118,27 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         $body = array("host_config_key" => $token);
         $context_type = "application/json";
         $timeout = 60;
-        $response = http_post($url, $body, $timeout, $context_type);
+
+        try {
+
+
+	        $client = new \GuzzleHttp\Client([
+		        'verify' => false,
+		        'base_uri' => $url
+	        ]);
+
+
+	        $guzzle_response = $client->post($url, [
+		        \GuzzleHttp\RequestOptions::JSON => $body
+	        ]);
+	        // $response = http_post($url, $body, $timeout, $context_type);
+	        $response = $guzzle_response->getBody();
+			$this->emDebug("Guzzle Response:", $response);
+        } catch (\Exception $e) {
+        	$this->emError("Error in guzzle client: ", $e->getMessage());
+			$response = false;
+	    }
+
 
         if ($response === false) {
             $message = "There was a problem updating the server instance using the puppet playbook.";
