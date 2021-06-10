@@ -116,59 +116,31 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
         // Not sure if this should have body before host_config_key but I'm guessing not.
         $body = array("host_config_key" => $token);
-//        $context_type = "application/json";
-//        $timeout = 60;
-//
-//        // test commit
-//        try {
-//
-//
-//	        $client = new \GuzzleHttp\Client([
-//		        'verify' => false,
-//		        'base_uri' => $url
-//	        ]);
-//
-//
-//	        $guzzle_response = $client->post($url, [
-//                \GuzzleHttp\RequestOptions::JSON => $body
-//            ]);
-//	        // $response = http_post($url, $body, $timeout, $context_type);
-//	        $response = $guzzle_response->getBody();
-//			$this->emDebug("Guzzle Response:", $response);
-//        } catch (\Exception $e) {
-//        	$this->emError("Error in guzzle client: ", $e->getMessage());
-//			$response = false;
-//	    }
+        $context_type = "application/json";
+        $timeout = 60;
+
+        // test commit
+        try {
 
 
-        $curl = curl_init();
-        $data_string = json_encode($body);
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $data_string,
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json'
-            ),
-        ));
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
-        $response = curl_exec($curl);
-        if (curl_errno($curl)) {
-            $error_msg = curl_error($curl);
+            $client = new \GuzzleHttp\Client([
+                'verify' => false,
+                'base_uri' => $url
+            ]);
+
+
+            $guzzle_response = $client->post($url, [
+                \GuzzleHttp\RequestOptions::JSON => $body
+            ]);
+            // $response = http_post($url, $body, $timeout, $context_type);
+            $response = $guzzle_response->getBody();
+            $this->emDebug("Guzzle Response:", $response);
+        } catch (\Exception $e) {
+            $this->emError("Error in guzzle client: ", $e->getMessage());
+            $response = false;
         }
-        curl_close($curl);
-        $this->emLog("error");
-        $this->emLog($error_msg);
-        $this->emLog("response");
-        $this->emLog($response);
+
+
         if ($response === false) {
             $message = "There was a problem updating the server instance using the puppet playbook.";
             $result = false;
