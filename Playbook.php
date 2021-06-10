@@ -161,10 +161,12 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         ));
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($curl);
-        $sent_request = curl_getinfo($curl);
+        if (curl_errno($curl)) {
+            $error_msg = curl_error($curl);
+        }
         curl_close($curl);
-        $this->emLog("info");
-        $this->emLog($sent_request);
+        $this->emLog("error");
+        $this->emLog($error_msg);
         $this->emLog("response");
         $this->emLog($response);
         if ($response === false) {
