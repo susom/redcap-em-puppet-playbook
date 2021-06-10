@@ -159,6 +159,8 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                 'Content-Type: application/json'
             ),
         ));
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($curl);
         if (curl_errno($curl)) {
