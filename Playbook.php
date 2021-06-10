@@ -142,7 +142,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
 
         $curl = curl_init();
-
+        $data_string = json_encode($body);
         curl_setopt_array($curl, array(
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -152,9 +152,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => '{
-                "host_config_key": ' . $token . '
-            }',
+            CURLOPT_POSTFIELDS => $data_string,
             CURLOPT_HTTPHEADER => array(
                 'Content-Type: application/json'
             ),
