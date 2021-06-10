@@ -129,8 +129,12 @@ class Playbook extends \ExternalModules\AbstractExternalModule
 
 
 	        $guzzle_response = $client->post($url, [
-		        \GuzzleHttp\RequestOptions::JSON => $body
-	        ]);
+                \GuzzleHttp\RequestOptions::JSON => $body,
+                'proxy' => [
+                    'http' => 'http://tds-zero-p03.stanford.edu', // Use this proxy with "http"
+                    'https' => 'https://tds-zero-p03.stanford.edu', // Use this proxy with "https",
+                ]
+            ]);
 	        // $response = http_post($url, $body, $timeout, $context_type);
 	        $response = $guzzle_response->getBody();
 			$this->emDebug("Guzzle Response:", $response);
