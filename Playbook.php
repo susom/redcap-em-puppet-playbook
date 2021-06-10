@@ -159,9 +159,9 @@ class Playbook extends \ExternalModules\AbstractExternalModule
                 'Content-Type: application/json'
             ),
         ));
-
+        curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         $response = curl_exec($curl);
-        $sent_request = curl_getinfo($curl, CURLINFO_HEADER_OUT);
+        $sent_request = curl_getinfo($curl);
         curl_close($curl);
         $this->emLog("info");
         $this->emLog($sent_request);
