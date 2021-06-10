@@ -110,37 +110,63 @@ class Playbook extends \ExternalModules\AbstractExternalModule
         if (empty($url) || empty($token)) {
             $msg = "Unable to refresh playbook - required system parameters missing!";
             $this->emLog($msg);
-            return array (FALSE, $msg);
+            return array(FALSE, $msg);
         }
 
 
         // Not sure if this should have body before host_config_key but I'm guessing not.
         $body = array("host_config_key" => $token);
-        $context_type = "application/json";
-        $timeout = 60;
+//        $context_type = "application/json";
+//        $timeout = 60;
+//
+//        // test commit
+//        try {
+//
+//
+//	        $client = new \GuzzleHttp\Client([
+//		        'verify' => false,
+//		        'base_uri' => $url
+//	        ]);
+//
+//
+//	        $guzzle_response = $client->post($url, [
+//                \GuzzleHttp\RequestOptions::JSON => $body
+//            ]);
+//	        // $response = http_post($url, $body, $timeout, $context_type);
+//	        $response = $guzzle_response->getBody();
+//			$this->emDebug("Guzzle Response:", $response);
+//        } catch (\Exception $e) {
+//        	$this->emError("Error in guzzle client: ", $e->getMessage());
+//			$response = false;
+//	    }
 
-        // test commit
-        try {
 
+        $curl = curl_init();
 
-	        $client = new \GuzzleHttp\Client([
-		        'verify' => false,
-		        'base_uri' => $url
-	        ]);
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => '{
+                "host_config_key": $token
+            }',
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            ),
+        ));
 
-
-	        $guzzle_response = $client->post($url, [
-                \GuzzleHttp\RequestOptions::JSON => $body
-            ]);
-	        // $response = http_post($url, $body, $timeout, $context_type);
-	        $response = $guzzle_response->getBody();
-			$this->emDebug("Guzzle Response:", $response);
-        } catch (\Exception $e) {
-        	$this->emError("Error in guzzle client: ", $e->getMessage());
-			$response = false;
-	    }
-
-
+        $response = curl_exec($curl);
+        $sent_request = curl_getinfo($curl, CURLINFO_HEADER_OUT);
+        curl_close($curl);
+        $this->emLog("info");
+        $this->emLog($sent_request);
+        $this->emLog("response");
+        $this->emLog($response);
         if ($response === false) {
             $message = "There was a problem updating the server instance using the puppet playbook.";
             $result = false;
@@ -148,7 +174,7 @@ class Playbook extends \ExternalModules\AbstractExternalModule
             $message = "Playbook initiated - please check the redcap-operations channel in slack for details.";
             $result = true;
         }
-        return array($result,$message);
+        return array($result, $message);
     }
 
 
